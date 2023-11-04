@@ -2,7 +2,7 @@ CC = clang++
 OPTIONS = -g -Werror -W -Wunused -Wuninitialized -Wshadow -std=c++17
 
 #compile table ADT
-table: table.hpp table.cpp
+table: table/table.hpp table/table.cpp
 	$(CC) -c  $(OPTIONS) table/table.cpp -o table/table.o
 
 #compile producer
@@ -26,3 +26,4 @@ run-consumer:
 #clean
 clean:
 	rm -rf *.o
+	rm -- **/*.o

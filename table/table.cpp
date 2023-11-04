@@ -41,7 +41,7 @@ void table::addColumn(const std::string& name) {
     (*iter).push_back(name);
     ++iter;
     //add extra empty element to the rest of the table
-    for (iter; iter < data.end(); ++iter) {
+    for ( ; iter != data.end(); ++iter) {
         (*iter).push_back("");
     }
 }
@@ -50,7 +50,7 @@ void table::addColumn(const std::string& name) {
 void table::removeColumn(const std::string& name){
     //find index of the column with a given name
     size_t index = 0;
-    for (index; index < data.size(); ++index) {
+    for ( ; index < data.size(); ++index) {
         if (data[0][index] == name) {break;}
     }
     //return if name is not in the header row
@@ -58,7 +58,7 @@ void table::removeColumn(const std::string& name){
     //remove column from each row
     std::vector<std::vector<std::string>>::iterator iter = data.begin();
     ++iter;//skip header row
-    for (iter; iter < data.end(); ++iter) {
+    for ( ; iter != data.end(); ++iter) {
         (*iter).erase((*iter).begin()+index);
     }
 }
@@ -87,13 +87,13 @@ std::vector<std::string> table::popRow(){
 }
 
 //displays the table in the ostream provided
-std::ostream& table::display(std::ostream& out) const {
+std::ostream& table::display(std::ostream& out) {
     //find the length of the longest string in the table
-    int longest = 0;
+    size_t longest = 0;
     std::vector<std::vector<std::string>>::iterator iti = data.begin();
-    for (iti; iti < data.end(); ++iti) {
+    for ( ; iti < data.end(); ++iti) {
         std::vector<std::string>::iterator itj = (*iti).begin();
-        for (itj; itj < (*iti).end(); ++itj) {
+        for ( ; itj < (*iti).end(); ++itj) {
             if ((*itj).length() > longest) {longest = (*itj).length();}
         }
     }
@@ -105,7 +105,7 @@ std::ostream& table::display(std::ostream& out) const {
     out << std::endl;
     out << "| ";
     std::vector<std::string>::iterator ith = data[0].begin();
-    for (ith; ith < data[0].end(); ++ith) {
+    for ( ; ith < data[0].end(); ++ith) {
         out << *ith;
         for (size_t i = 0; i < longest-(*ith).length(); ++i) {
             out << " ";
@@ -118,12 +118,12 @@ std::ostream& table::display(std::ostream& out) const {
     out << "+";
     out << std::endl;
     //all other rows
-    std::vector<std::vector<std::string>>::iterator iti = data.begin();
+    iti = data.begin();
     ++iti;//skip header row
-    for (iti; iti < data.end(); ++iti) {
+    for ( ; iti < data.end(); ++iti) {
         std::vector<std::string>::iterator itj = (*iti).begin();
         out << "| ";
-        for (itj; itj < (*iti).end(); ++itj) {
+        for ( ; itj < (*iti).end(); ++itj) {
             out << *itj;
             for (size_t i = 0; i < longest-(*ith).length(); ++i) {
                 out << " ";
@@ -152,9 +152,9 @@ std::vector<std::string> table::operator[](int index) const {
     return data[index];
 }
 
-table& table::operator+=(const table& rhs) {
+table& table::operator+=(table& rhs) {
     std::vector<std::vector<std::string>>::iterator iter = rhs.data.begin();
-    for (iter; iter < rhs.data.end(); ++iter) {
+    for ( ; iter < rhs.data.end(); ++iter) {
         data.push_back(*iter);
     }
     return *this;
@@ -171,7 +171,7 @@ bool table::operator==(const table& rhs) const {
     return true;
 }
 
-table operator+(table lhs, const table& rhs){
+table operator+(table lhs, table& rhs){
     table result(lhs);
     return result += rhs;
 }

@@ -19,12 +19,12 @@ class table {
         void pushRow(const std::vector<std::string>&);  //add a row to the bottom of the table
         int getSize();                                  //return the number of rows in the table
         std::vector<std::string> popRow();              //remove a row from the top of the table and return it
-        std::ostream& display(std::ostream&) const;     //display the state of the table to the provided ostream
+        std::ostream& display(std::ostream&);           //display the state of the table to the provided ostream
 
         table& operator=(table);                        //assignment operator
         std::vector<std::string>& operator[](int);      //Accessor/Modifier
         std::vector<std::string> operator[](int) const; //Accessor
-        table& operator+=(const table&);                //+= operator
+        table& operator+=(table&);                //+= operator
         bool operator==(const table&) const;            //check if tables are equal
 
     private:
