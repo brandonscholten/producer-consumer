@@ -20,9 +20,9 @@ void criticalSection() {
     file.open("items.csv");
     std::string line;
     while(getline(file, line)){
-        criticalSignal.aquire();
+        criticalSignal.acquire();
         std::vector<std::string> lineVec;
-        for (size_t i; i < line.length(); ++i) {
+        for (size_t i = 0; i < line.length(); ++i) {
             std::string element;
             if (line[i] == ',') {
                 lineVec.push_back(element);

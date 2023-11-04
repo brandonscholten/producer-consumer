@@ -28,11 +28,11 @@ void criticalSection() {
     table* items = (table*)shmat(shmid, (void*)0,0);
     //pop rows off the table forever
     while (true) {    
-        criticalSignal.aquire();
+        criticalSignal.acquire();
         std::cout << "consumed table item: ";
         std::vector<std::string> row = items->popRow();
         std::vector<std::string>::iterator iter;
-        for (iter; iter < row.end(); ++iter) {std::cout << (*iter); std::cout << ", ";}
+        for ( ; iter != row.end(); ++iter) {std::cout << (*iter); std::cout << ", ";}
         std::cout << std::endl;
         shmdt(items);
         criticalSignal.release();

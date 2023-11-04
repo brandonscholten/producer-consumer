@@ -1,5 +1,6 @@
-CC = clang++
-OPTIONS = -g -Werror -W -Wunused -Wuninitialized -Wshadow -std=c++17
+CC = gcc
+#OPTIONS = -g -Werror -W -Wunused -Wuninitialized -Wshadow -std=c++20
+OPTIONS = -pthread -Irt
 
 #compile table ADT
 table: table/table.hpp table/table.cpp
@@ -7,19 +8,19 @@ table: table/table.hpp table/table.cpp
 
 #compile producer
 producer: semaphore.hpp producer.cpp
-	$(CC) -c $(OPTIONS) producer.cpp -o producer
+	$(CC) -c $(OPTIONS) producer.cpp -o producer_exec.o
 
 #compile consumer
 consumer: semaphore.hpp consumer.cpp
-	$(CC) -c $(OPTIONS) consumer.cpp -o consumer
+	$(CC) -c $(OPTIONS) consumer.cpp -o consumer_exec.o
 
 #run producer
 run-producer:
-	./producer.o
+	sudo ./producer_exec.o
 
 #run consumer
 run-consumer:
-	./consumer.o
+	sudo ./consumer_exec.o
 
 #TODO: make tests
 
