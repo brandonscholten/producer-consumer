@@ -1,8 +1,16 @@
 #ifndef SEMAPHORE_HPP
 #define SEMAPHORE_HPP
 
-#include <semaphore>
+#include "table/table.hpp"
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <thread>
+#include <semaphore.h>
+#include <stdio.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
-std::counting_semaphore<1> criticalSignal(0);
+sem_t semaphore;
 
 #endif

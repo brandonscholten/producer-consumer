@@ -67,17 +67,12 @@ void table::removeColumn(const std::string& name){
 //adds additional empty elements to match columns
 //truncates row if there are too many elements
 //TODO: overload for std::string comma separated list 
-void table::pushRow(const std::vector<std::string>& row) {
-    std::vector<std::string> result = row;
-    //match vector to data
-    if (row.size() > data[0].size()){
-        result.erase(result.begin()+data.size(), result.end());
-    } else if (row.size() < data[0].size()) {
-        for (size_t i = result.size(); i < data[0].size(); ++i) {
-            result.push_back("");
-        }
-    }
-    data.push_back(result);
+//TODO: fully implement this
+void table::pushRow( const std::vector<std::string>& row) {
+    std::cerr << data.capacity() << std::endl;
+    std::cerr << "made it to pushRow function.\n";
+    data[0] = row;
+    std::cerr << "pushed row";
 }
 
 std::vector<std::string> table::popRow(){
@@ -88,19 +83,20 @@ std::vector<std::string> table::popRow(){
 
 //displays the table in the ostream provided
 std::ostream& table::display(std::ostream& out) {
+    out << "made it into display function\n";
     //find the length of the longest string in the table
     size_t longest = 0;
     std::vector<std::vector<std::string>>::iterator iti = data.begin();
-    for ( ; iti < data.end(); ++iti) {
+    for ( ; iti != data.end(); ++iti) {
         std::vector<std::string>::iterator itj = (*iti).begin();
-        for ( ; itj < (*iti).end(); ++itj) {
+        for ( ; itj != (*iti).end(); ++itj) {
             if ((*itj).length() > longest) {longest = (*itj).length();}
         }
     }
     //display the table 
     //header row
     out << "+"; 
-    for (size_t i = 0; i < (longest+2)*data[0].size(); ++i) {out << "-";}
+    for (size_t i = 0; i != (longest+2)*data[0].size(); ++i) {out << "-";}
     out << "+";
     out << std::endl;
     out << "| ";
