@@ -1,6 +1,6 @@
-Brandon Scholten - Operating Systems - 2023
+Brandon Scholten - Operating Systems - Producer Comsuner - 2023
 # Overview
-This project uses two separate processes to simulate the producer consumer problem using a buffer of size three. The buffer is loaded into shared memory and modified by the producer, which adds values to it in a loop. The consumer reads each value as it is added and displays it in the terminal. The shared memory buffer is then deallocated. THe project uses the semaphore.h library and sys/mman library to implement semaphores and interprocess communication. 
+This project uses two separate processes to simulate the producer consumer problem using a buffer of size two. The buffer is loaded into shared memory and modified by the producer, which adds values to it in a loop. The consumer reads each value as it is added and displays it in the terminal. The shared memory buffer is then deallocated. THe project uses the semaphore.h library and sys/mman library to implement semaphores and interprocess communication. 
 
 # Compilation
 To compile the program, clone the repository and run the following:
