@@ -1,45 +1,60 @@
-//This file is responsible for displaying and then removing items from the table in shared memory
-#include "semaphore.hpp"
-#include <cstdlib>
+#include <iostream>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <semaphore.h>
 #include <unistd.h>
-#include <signal.h>
+#include <cstring>
 
-int shmid;
-
-void signalCallbackHandler(int signal){
-    std::cout << "\ncleaning up shared memory...\n";
-    //clean up shared memory
-    shmctl(shmid, IPC_RMID, NULL);
-    //exit
-    exit(signal);
-}
-
-void criticalSection() {
-    std::cout << "critical section running...\n";
-    //set up interprocess communication
-    key_t key = ftok("shmfile", 65);
-    shmid = shmget(key, 1024, 0666 | IPC_CREAT);
-    table* items = (table*)shmat(shmid, (void*)0,0);
-    std::cout << "IPC initialized!\n";
-    //pop rows off the table forever
-    while (true) {    
-        std::cout << "popping off 😎\n";
-        std::cout << "waiting...\n";
-        sem_wait(&semaphore);
-        std::cout << "consumed table item: ";
-        std::vector<std::string> row = items->popRow();
-        std::vector<std::string>::iterator iter;
-        for ( ; iter != row.end(); ++iter) {std::cout << (*iter); std::cout << ", ";}
-        std::cout << std::endl;
-        shmdt(items);
-        sem_post(&semaphore);
-        std::cout << "finished...\n";
-    }
-}
+struct SharedData {
+    int data [3];
+};
 
 int main() {
-    signal(SIGINT, signalCallbackHandler);
-    std::cout << "\n";
-    std::thread t1(criticalSection);
-    t1.join();
+    const char* shm_name = "/my_shared_memory";
+    const char* sem_name = "/my_semaphore";
+    int shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, 0666);
+    if (shm_fd == -1) {
+        perror("shm_open");
+        exit(EXIT_FAILURE);
+    }
+
+    ftruncate(shm_fd, sizeof(SharedData));
+    SharedData *shared_data = (SharedData *)mmap(NULL, sizeof(SharedData), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (shared_data == MAP_FAILED) {
+        perror("mmap");
+        exit(EXIT_FAILURE);
+    }
+
+    sem_t *sem = sem_open(sem_name, 0);
+    if (sem == SEM_FAILED) {
+        perror("sem_open");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < 3; ++i) {
+        // Wait for the semaphore
+        if (sem_wait(sem) == -1) {
+            perror("sem_wait");
+            exit(EXIT_FAILURE);
+        }
+
+        // Consume data
+        std::cout << "Consumer is consuming data: " << shared_data->data[i] << std::endl;
+        sleep(1); // Simulate some work
+
+        // Release the semaphore
+        if (sem_post(sem) == -1) {
+            perror("sem_post");
+            exit(EXIT_FAILURE);
+        }
+    }
+    // Close the semaphore
+    if (sem_close(sem) == -1) {
+        perror("sem_close");
+        exit(EXIT_FAILURE);
+    }
+
+    // Cleanup shared memory
+    munmap(shared_data, sizeof(SharedData));
+    close(shm_fd);
+    return 0;
 }

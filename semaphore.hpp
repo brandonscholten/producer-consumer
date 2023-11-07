@@ -1,16 +1,29 @@
 #ifndef SEMAPHORE_HPP
 #define SEMAPHORE_HPP
 
-#include "table/table.hpp"
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <thread>
-#include <semaphore.h>
-#include <stdio.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
+#include <mutex>
+#include <condition_variable>
 
-sem_t semaphore;
+class Semaphore {
+public:
+    explicit Semaphore(int count = 0) : count_(count) {}
 
-#endif
+    void Notify() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        ++count_;
+        cv_.notify_one();
+    }
+
+    void Wait() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        cv_.wait(lock, [this] { return count_ > 0; });
+        --count_;
+    }
+
+private:
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    int count_;
+};
+
+#endif // SEMAPHORE_HPP

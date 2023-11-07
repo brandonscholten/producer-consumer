@@ -1,55 +1,58 @@
-//This file creates a new thread responsible for creating a table based on items.csv
-#include "semaphore.hpp"
+#include <iostream>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <semaphore.h>
+#include <unistd.h>
+#include <cstring>
 
-void criticalSection() {
-    std::cout << "critical section running...\n";
-    //setup interprocess communication
-    key_t key = ftok("shmfile", 65);
-    int shmid = shmget(key, 1024, 0666 | IPC_CREAT);
-    //table* items = (table*)shmat(shmid, (void*)0, 0);
-    char* items = (char*)shmat(shmid, (void*)0, 0);
-    std::cout << "IPC initialized!\n";
-    //create a table using items.csv
-    std::ifstream file;
-    file.open("items.csv");
-    std::string line;
-    std::cout << "creating table from CSV\n";
-    while(getline(file, line)){
-        std::cout << "line: " << line << std::endl;
-        std::cout << "waiting..." << std::endl;
-        sem_wait(&semaphore);
-        std::cout << "producing...\n";
-        std::vector<std::string> lineVec;
-        std::cout << "created vector for line.\n";
-        for (size_t i = 0; i < line.length(); ++i) {
-            std::cout << "in vector creation loop:\n";
-            std::cout << "i = "; std::cout << i << std::endl;
-            std::string element;
-            if (line[i] == ',') {
-                lineVec.push_back(element);
-                element = "";
-            } else {
-                element.push_back(line[i]);
-            }
-            std::cout << "element = "; std::cout << element << std::endl;
-        } 
-        std::cout << "pushing to table...\n";
-        items->pushRow(lineVec);
-        //write table to shared memory
-        std::cout << "writing to shared memory...\n";
-        shmdt(items);
-        std::cout << "produced item: \n";
-        items->display(std::cout); 
-        sem_post(&semaphore);
-        std::cout << "finished...\n";
-    }
-}
+struct SharedData {
+    int data [3];
+};
 
 int main() {
-    //initialize semaphore
-    sem_init(&semaphore, 1, 1);
-    std::cout << "\n";
-    //run critical section
-    std::thread t1(criticalSection);
-    t1.join();
+    const char* shm_name = "/my_shared_memory";
+    const char* sem_name = "/my_semaphore";
+    int shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, 0666);
+    if (shm_fd == -1) {
+        perror("shm_open");
+        exit(EXIT_FAILURE);
+    }
+
+    ftruncate(shm_fd, sizeof(SharedData));
+    SharedData *shared_data = (SharedData *)mmap(NULL, sizeof(SharedData), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (shared_data == MAP_FAILED) {
+        perror("mmap");
+        exit(EXIT_FAILURE);
+    }
+
+    sem_t *sem = sem_open(sem_name, O_CREAT, 0644, 1);
+    if (sem == SEM_FAILED) {
+        perror("sem_open");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < 3; ++i) {
+        // Wait for the semaphore
+        if (sem_wait(sem) == -1) {
+            perror("sem_wait");
+            exit(EXIT_FAILURE);
+        }
+
+        // Produce data
+        shared_data->data[i] = 42+i;
+        std::cout << "Producer produced data: " << shared_data->data[i] << std::endl;
+        sleep(1); // Simulate some work
+
+        // Release the semaphore
+        if (sem_post(sem) == -1) {
+            perror("sem_post");
+            exit(EXIT_FAILURE);
+        }
+    }
+    // Close the semaphore
+    if (sem_close(sem) == -1) {
+        perror("sem_close");
+        exit(EXIT_FAILURE);
+    }
+
+    return 0;
 }
