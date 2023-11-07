@@ -6,7 +6,7 @@
 #include <cstring>
 
 struct SharedData {
-    int data [3];
+    int data [2];
 };
 
 int main() {
@@ -30,7 +30,7 @@ int main() {
         perror("sem_open");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 2; ++i) {
         // Wait for the semaphore
         if (sem_wait(sem) == -1) {
             perror("sem_wait");
